@@ -1,0 +1,6 @@
+-module(lotto_app_api).
+
+-export([create_ticket/2]).
+
+
+create_ticket(User_id, [One, Two, Three, Four, Five]).
