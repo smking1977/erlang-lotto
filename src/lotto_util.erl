@@ -4,5 +4,5 @@
 
 
 ticket(ID) ->
-    Ticket = lists:map(fun() -> rand:uniform(10) end, lists:seq(1, 6)),
+    Ticket = lists:map(fun(_) -> rand:uniform(10) end, lists:seq(1, 6)),
     lotto_sup:start_ticket(ID, Ticket).
