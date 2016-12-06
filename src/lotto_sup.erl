@@ -14,7 +14,7 @@ init([]) ->
     Shutdown = 2000,
     Type = worker,
 
-    ChildSpec = #{id => mon,
+    ChildSpec = #{id => monitor,
 	    start => {lotto_mon, start_link, []},
 	    restart => permanent,
 	    shutdown => 2000,

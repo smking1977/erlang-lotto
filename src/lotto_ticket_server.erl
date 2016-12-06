@@ -31,18 +31,30 @@ handle_call(_Request, _From, State) ->
 handle_cast(_Msg, State) ->
     {noreply, State}.
 
+%%%% Matching numbers
 handle_info({gproc_ps_event, {result},{result, [One]}},  #{one := One} = State) ->
     io:fwrite('One Res - ~p  ~n ', [One]),
     {noreply, State};
 handle_info({gproc_ps_event, {result}, {result, [One, Two]}},  #{one := One, two := Two} = State) ->
     io:fwrite('Two Num - ~p - ~p  ~n ', [One, Two]),
     {noreply, State};
-handle_info({gproc_ps_event, {result}, {result, [One, Two, Three]}},  #{one := One, two := Two, three := Three, id := ID } = State) ->
-    %Status = winner,
+handle_info({gproc_ps_event, {result}, {result, [One, Two, Three]}},  #{one := One, two := Two, three := Three } = State) ->
+    io:fwrite('TwoThree  Num - ~p - ~p - ~p  ~n ', [One, Two, Three]),
+    {noreply,  State};
+handle_info({gproc_ps_event, {result}, {result, [One, Two, Three, Four]}},  #{one := One, two := Two, three := Three, four := Four } = State) ->
+    io:fwrite('TwoThree  Num - ~p - ~p - ~p - ~p  ~n ', [One, Two, Three, Four]),
+    {noreply,  State};
+
+%%%% Winning tickets
+handle_info({gproc_ps_event, {result}, {result, [One, Two, Three, Four, Five]}},  #{one := One, two := Two, three := Three, four := Four, five := Five,  status := winner } = State) ->
+    io:fwrite('Still a winner ~n '),
+    {noreply,  State};
+handle_info({gproc_ps_event, {result}, {result, [One, Two, Three, Four, Five]}},  #{one := One, two := Two, three := Three, four := Four, five := Five,  id := ID } = State) ->
     io:fwrite('WINNER ~n '),
     lotto_api:publish_winning_ticket(ID),
     {noreply,  State#{status => winner}};
 
+%% Loosing tickets
 handle_info({gproc_ps_event,  {result} , {result, _}},  #{status := loser} = State) ->
     io:fwrite('STILL A LOSER!!!!! ~n'),
     {noreply, State};
