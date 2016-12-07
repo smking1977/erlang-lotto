@@ -2,7 +2,7 @@
 -behaviour(gen_server).
 
 %% API.
--export([start_link/2]).
+-export([start_link/2, details/1]).
 
 %% gen_server.
 -export([init/1]).
@@ -17,20 +17,36 @@
 start_link(ID, Ticket) ->
     gen_server:start_link({global, ID} , ?MODULE, {ID, Ticket}, []).
 
+details(ID) ->
+    	gen_server:call({global, ID}, {ticket_details}).
+
+
 
 %% gen_server.
 init({ID, [One, Two , Three, Four, Five]}) ->
-    gproc_ps:subscribe(l, {result}),
-    lotto_api:publish_new_ticket(1),
+  %  gproc_ps:subscribe(l, {result}),
+  %  lotto_api:publish_new_ticket(ID),
+    self() ! {setup, ID},
     {ok, #{ id => ID, one => One, two => Two, three => Three, four => Four, five => Five, status=> possible_winner}}.
 
 
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Return State of ticket 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+handle_call({ticket_details},_From,  State) ->
+    {reply, State, State};
 handle_call(_Request, _From, State) ->
     {reply, ignored, State}.
 
 handle_cast(_Msg, State) ->
     {noreply, State}.
 
+handle_info({setup, ID}, State) ->
+    gproc_ps:subscribe(l, {result}),
+    lotto_api:publish_new_ticket(ID),
+    {noreply, State};
 %%%% Matching numbers
 handle_info({gproc_ps_event, {result},{result, [One]}},  #{one := One} = State) ->
     io:fwrite('One Res - ~p  ~n ', [One]),

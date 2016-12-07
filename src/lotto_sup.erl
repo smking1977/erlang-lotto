@@ -36,8 +36,6 @@ init([]) ->
 
 start_ticket(Id, Ticket) ->
     
-    io:fwrite('supervisor- start_ticket '),
-
     Restart = permanent,
     Shutdown = 2000,
     Type = worker,
