@@ -26,7 +26,7 @@ count() ->
 
 init([]) ->
     gproc_ps:subscribe(l, {monitor}),
-    {ok, #{count => 0, winner => 0 , loser =>0 }}.
+    {ok, #{count => 0, winner => 0 , loser =>0, winning_numbers => [] }}.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Return State of Ticket Statistics
@@ -56,8 +56,8 @@ handle_info({gproc_ps_event, {monitor} ,{loser, _ID}}, #{loser := Count} = State
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%  Recieve notificatino of a winning ticket 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-handle_info({gproc_ps_event, {monitor} ,{winner, _ID}}, #{winner := Count} = State) ->
-    {noreply, State#{winner => Count+1}};
+handle_info({gproc_ps_event, {monitor} ,{winner, ID}}, #{winner := Count, winning_numbers := Winners} = State) ->
+    {noreply, State#{winner => Count+1, winning_numbers => Winners ++ [ID]}};
 
 
 handle_info(_Info, State) ->
