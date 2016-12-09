@@ -77,7 +77,7 @@ handle_info({gproc_ps_event,  {result} , {result, _}},  #{status := loser} = Sta
 %% Loosing Message received for first time 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 handle_info({gproc_ps_event,  {result} , {result, _}},  #{id := ID} =State) ->
-    io:fwrite('LOSER!!!!! ~n'),
+  %  io:fwrite('LOSER!!!!! ~n'),
     lotto_api:publish_loosing_ticket(ID),
 
     {noreply,  State#{status => loser}};
