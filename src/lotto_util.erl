@@ -1,12 +1,13 @@
 -module(lotto_util).
 
 -export([ticket/1, bulk_ticket/1, generate_tickets/2, ticket_worker/1]).
--define(BatchSize, 10000).
+-define(BatchSize, 50000).
 
 
 ticket(ID) ->
     Ticket = lists:map(fun(_) -> rand:uniform(10) end, lists:seq(1, 5)),
 %    lotto_sup:start_ticket(ID, Ticket).
+%    Ticket = [1,2,3,4,5],
     lotto_ticket_server:start_link(ID,Ticket).
 
 bulk_ticket(Num) when Num < ?BatchSize  ->

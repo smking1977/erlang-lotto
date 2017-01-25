@@ -5,10 +5,13 @@
     {applications,
      [kernel,
       stdlib,
-      gproc
+      gproc,
+      sasl,
+      jsx,
+      cowboy
     ]}
   , {modules, []}
-  , {mod, {lotto, []}}
+  , {mod, {lotto_application, []}}
   , {registered, []}
   ]
 }.
