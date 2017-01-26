@@ -17,26 +17,29 @@ init(_Type, Req, _Opts) ->
     Ticket_details = lotto_ticket_server:details(list_to_integer(binary_to_list(ID))),
     {ok, Req3} = cowboy_req:chunked_reply(200, Headers,  cors_headers:allow_origin(Req2)),
      chunk(Req3, { Ticket_details, 1}),
-    {loop, Req3, #{counter => 2}}.
+    {loop, Req3, #{counter => 2, id => list_to_integer(binary_to_list(ID)) }}.
 
 
 
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%  Recieve notificatino of a winning ticket 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-info({gproc_ps_event, {monitor}, {_, ID}}, Req, #{counter := Counter} = S) ->
-    io:fwrite('resource monitor recieved msg...\n '),
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%  Recieve notification of ticket status change 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+info({gproc_ps_event, {monitor}, {_, ID}}, Req, #{counter := Counter, id := ID} = S) ->
+    io:fwrite('chunk  resource handler msg recieved for ID: ~w, state conatins ID:  ~n ', [ID]),
+
     Ticket_details = lotto_ticket_server:details(ID),
     case chunk(Req, { Ticket_details, Counter}) of
 	ok ->
 	    {loop, Req, S#{counter => Counter + 1}};        
 	{error, _} ->
-	    {ok, Req, S}
+	    {loop, Req, S}
     end;
 
-info({gproc_ps_event, {monitor}, {_, _}}, _Req,  _S) ->
-    ok.
+info({gproc_ps_event, {monitor}, _}, Req,  State) ->
+    io:fwrite('resource monitor recieved msg...\n '),
+        {loop, Req, State}.
+    
 
  chunk(Req, { Message, _Counter}) ->
     cowboy_req:chunk([jsx:encode(Message), "\n\n"], Req).
