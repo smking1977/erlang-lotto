@@ -9,14 +9,15 @@
 init(_Type, Req, _Opts) ->
     io:fwrite('sse resource handler called...\n '),
     {ID, Req2} = cowboy_req:binding(id, Req),
-    gproc_ps:subscribe(l, {monitor}),
-
+ 
+ %   gproc_ps:subscribe(l, {monitor}),
+    lotto_api:subscribe_to_ticket_monitor(list_to_integer(binary_to_list(ID))),
     io:fwrite('sse resource handler subscribed to GPROC...\n '),
 
     Headers = [{<<"content-type">>, <<"text/event-stream">>}],
     Ticket_details = lotto_ticket_server:details(list_to_integer(binary_to_list(ID))),
     {ok, Req3} = cowboy_req:chunked_reply(200, Headers,  cors_headers:allow_origin(Req2)),
-     chunk(Req3, { Ticket_details, 1}),
+    chunk(Req3, { Ticket_details, 1}),
     {loop, Req3, #{counter => 2, id => list_to_integer(binary_to_list(ID)) }}.
 
 
@@ -25,20 +26,19 @@ init(_Type, Req, _Opts) ->
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%  Recieve notification of ticket status change 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-info({gproc_ps_event, {monitor}, {_, ID}}, Req, #{counter := Counter, id := ID} = S) ->
+info({gproc_ps_event, {monitor, ID}, {_Status}}, Req, #{counter := Counter, id := ID} = S) ->
     io:fwrite('chunk  resource handler msg recieved for ID: ~w, state conatins ID:  ~n ', [ID]),
 
-    Ticket_details = lotto_ticket_server:details(ID),
-    case chunk(Req, { Ticket_details, Counter}) of
+   Ticket_details = lotto_ticket_server:details(ID),
+    case chunk(Req, {Ticket_details, Counter}) of
 	ok ->
 	    {loop, Req, S#{counter => Counter + 1}};        
 	{error, _} ->
 	    {loop, Req, S}
     end;
 
-info({gproc_ps_event, {monitor}, _}, Req,  State) ->
-    io:fwrite('resource monitor recieved msg...\n '),
-        {loop, Req, State}.
+info({gproc_ps_event, {monitor, _}, _}, Req,  State) ->
+    {loop, Req, State}.
     
 
  chunk(Req, { Message, _Counter}) ->

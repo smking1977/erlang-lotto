@@ -5,7 +5,8 @@
 	 publish_new_ticket/1,
 	 publish_loosing_ticket/1,
 	 publish_winning_ticket/1,
-	 subscribe_to_monitor/0]).
+	 subscribe_to_ticket_monitor/1,
+	 publish_to_ticket_monitor/1]).
 
 
 create_ticket(User_id, [One, Two, _Three, _Four, _Five]= Ticket) when is_integer(One) andalso is_integer(Two) ->
@@ -24,7 +25,9 @@ publish_loosing_ticket(ID) ->
 publish_winning_ticket(ID) ->
     gproc_ps:publish(l, {monitor}, {winner, ID}).
 
-subscribe_to_monitor() ->
-    gproc_ps:subscribe(l, {monitor}).
+subscribe_to_ticket_monitor(ID) ->
+    gproc_ps:subscribe(l, {monitor, ID}).
 
+publish_to_ticket_monitor(ID) ->
+    gproc_ps:publish(l, {monitor, ID}, {update}).
 
